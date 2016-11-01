@@ -15,9 +15,17 @@ Collection of scripts for error correcting antibody sequening
 
 ## Workflow
 
-1. pandaseq R1 und R2
-2. split into IgG vs. klMA
-3. a) HC IgG subtypes
-3. b) LC get ECBE, klMA discrimination
-4. count indices, only indices present >10 ?
-5. collapse indices —> consensus (check for variation)
+`pipeline.ch'
+- script that calls all the later ones
+
+`pandaseq.sh`
+- combine R1 and R2 to full variable region sequence
+
+`IgG_klMA_assign.py`
+- pandaseq R1 und R2split into IgG vs. klMA
+- HC IgG subtypes
+- LC get ECBE, klMA discrimination
+
+`indices`
+-count indices (only indices present >10 ?)
+-collapse indices —> consensus (check for variation)
