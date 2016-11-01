@@ -15,7 +15,7 @@ Collection of scripts for error correcting antibody sequening
 
 ## Workflow
 
-`pipeline.ch'
+`pipeline.ch`
 - script that calls all the later ones
 
 `pandaseq.sh`
