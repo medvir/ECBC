@@ -21,11 +21,11 @@ Collection of scripts for error correcting antibody sequening
 `pandaseq.sh`
 - combine R1 and R2 to full variable region sequence
 
-`IgG_klMA_assign.py`
+`IgG_klMA_ECBC.py`
 - pandaseq R1 und R2split into IgG vs. klMA
-- HC IgG subtypes
-- LC get ECBE, klMA discrimination
+- for HC get IgG subtypes
+- for LC get ECBE, klMA discrimination
 
 `indices`
--count indices (only indices present >10 ?)
--collapse indices —> consensus (check for variation)
+- count indices (only indices present >10 ?)
+- collapse indices —> consensus (check for variation)
