@@ -1,8 +1,8 @@
 #!/opt/python2.7/bin/python2.7
 
-### Version 2
+### Version xx
 '''
-Assigns the subtypes of a demultiplexed sample based on the I1 and the R2 read. Writes _R1, _R2 and I1 files.
+Assigns the subtypes of a demultiplexed sample based on the I1 and the R2 read. Writes _R1, and I1 files.
 - IgG1_R1/R2/I1
 - IgG2_R1/R2/I1
 - IgG3_R1/R2/I1
@@ -24,29 +24,65 @@ import os
 import re
 from itertools import izip
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
+import subprocess
 
-### funtions
+
+#############
+# Functions #
+#############
+
+def run_child(cmd, exe='/bin/bash'):
+	'''
+	use subrocess.check_output to run an external program with arguments
+	run this function with run_child(‘string that you want to run’)
+	'''
+   try:
+       output = subprocess.check_output(cmd, universal_newlines=True,
+       shell=True,
+#        executable=exe,
+       stderr=subprocess.STDOUT)
+   except subprocess.CalledProcessError as ee:
+       output = None
+   return output
+
 def hamming_dist(str1, str2):
-    '''Hamming distance'''
+    '''
+	returns hamming distance of two strings of identical length
+	'''
     assert len(str1) == len(str2), 'hamming_dist: length differs'
     return sum([1 for a, b in zip(str1, str2) if a != b])
 
-### arguments
+
+#############
+# Arguments #
+#############
+
 readfile1, readfile2, indexfile1 = sys.argv[1:4]
+
+
+########
+# Code #
+########
 
 ### open and unzip if necessary
 if sys.argv[1].endswith('.gz'):
-    itR1 = FastqGeneralIterator(gzip.open(readfile1))
+	itR1 = FastqGeneralIterator(gzip.open(readfile1))
 else:
-        itR1 = FastqGeneralIterator(open(readfile1))
+	itR1 = FastqGeneralIterator(open(readfile1))
+
 if sys.argv[2].endswith('.gz'):
     itR2 = FastqGeneralIterator(gzip.open(readfile2))
 else:
-        itR2 = FastqGeneralIterator(open(readfile2))
+    itR2 = FastqGeneralIterator(open(readfile2))
+
 if sys.argv[3].endswith('.gz'):
     itI1 = FastqGeneralIterator(gzip.open(indexfile1))
 else:
-        itI1 = FastqGeneralIterator(open(indexfile1))
+	itI1 = FastqGeneralIterator(open(indexfile1))
+
+
+		
+		
 
 ###
 fn = os.path.split(readfile1)[1]
@@ -59,8 +95,7 @@ file_type = ['R1', 'R2', 'I1']
 handle_dict = {}
 for i in igs:
     for ft in file_type:
-        handle_dict['%s_%s' % (i, ft)] = open('%s_%s_%s.fastq' %
-                                              (sample_name, i, ft), 'w+')
+        handle_dict['%s_%s' % (i, ft)] = open('%s_%s_%s.fastq' % (sample_name, i, ft), 'w+')
 
 for it_obj in izip(itR1, itR2, itI1):
     assert it_obj[0][0].split()[0] == it_obj[1][0].split()[0] \
@@ -139,6 +174,16 @@ for it_obj in izip(itR1, itR2, itI1):
         top.append('')
         handle_here.write('\n'.join(top))
 
+
+### close files
 for i in igs:
     for ft in file_type:
         handle_dict['%s_%s' % (i, ft)].close()
+		
+		
+		
+		
+		
+		
+run_child('pandaseq -o %s -f %s -r %s -w %s_panda.fasta' % (minimal, R1, R2, Name))
+

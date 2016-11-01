@@ -19,7 +19,8 @@ Collection of scripts for error correcting antibody sequening
 - script that calls all the later ones
 
 `pandaseq.sh`
-- combine R1 and R2 to full variable region sequence
+combine R1 and R2 to full variable region sequence
+Usage: `pandaseq.sh R1.FASTQ(.GZ)/DIRECTORY [MINIMAL_OVERLAP (default = 1)]`
 
 `IgG_klMA_ECBC.py`
 - pandaseq R1 und R2split into IgG vs. klMA
