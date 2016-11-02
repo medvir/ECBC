@@ -15,18 +15,28 @@ Collection of scripts for error correcting antibody sequening
 
 ## Workflow
 
-`pipeline.ch`
+`pipeline.sh`
 - script that calls all the later ones
 
 `pandaseq.sh`
 combine R1 and R2 to full variable region sequence
-Usage: `pandaseq.sh R1.FASTQ(.GZ)/DIRECTORY [MINIMAL_OVERLAP (default = 1)]`
+Usage: `pandaseq.sh R1.FASTQ(.GZ)/DIRECTORY [MINIMAL_OVERLAP (default = 10)]`
 
 `IgG_klMA_ECBC.py`
 - pandaseq R1 und R2split into IgG vs. klMA
 - for HC get IgG subtypes
 - for LC get ECBE, klMA discrimination
+Usage: `IgG_klMA_ECBC.py XX_PANDA.FASTA I1.FASTQ(.GZ)`
+
 
 `indices`
 - count indices (only indices present >10 ?)
 - collapse indices —> consensus (check for variation)
+
+
+## Primers
+
+
+## Chunks
+
+`pandaseq.py`
