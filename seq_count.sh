@@ -1,4 +1,6 @@
 #! /bin/bash
+
+### counting fastQ files
 list=$(ls | grep "\.fastq$")
 sum=0
 for i in $list; do
@@ -12,6 +14,8 @@ if (( $sum > 0 )); then
 	echo
 fi
 
+
+### counting fastA files
 list=$(ls | grep "\.fasta$")
 sum=0
 for i in $list; do
