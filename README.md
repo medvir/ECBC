@@ -1,13 +1,17 @@
 # ECBC
 Collection of scripts for error correcting antibody sequening
 
-## IgG Reads
+## Old IgG_klMA_assign_V2.py
+
+`IgG_klMA_assign_V2.py` assigns the IgG and klMA subtypes of a demultiplexed sample based on the I1 and the R2 read.
+
+## ECBC IgG Reads
 - R1: fwd 4N, leader, variable
 - R2: rev subtype determination, constant, variable
 - I1: EVBC 12
 - I2: sample
 
-## klMA Reads
+## ECBC klMA Reads
 - R1: fwd 4N, leader, variable
 - R2: rev ECBC 12, spacer 4, constant, variable
 - I1: LC index TAAGGCGAGAGC 12
