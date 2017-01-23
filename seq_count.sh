@@ -1,6 +1,6 @@
 #! /bin/bash
 
-### counting fastQ files
+### counting fastQ sequences
 list=$(ls | grep "\.fastq$")
 sum=0
 for i in $list; do
@@ -15,7 +15,7 @@ if (( $sum > 0 )); then
 fi
 
 
-### counting fastA files
+### counting fastA sequences
 list=$(ls | grep "\.fasta$")
 sum=0
 for i in $list; do

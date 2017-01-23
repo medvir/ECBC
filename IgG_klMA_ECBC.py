@@ -231,8 +231,64 @@ print(run_child('seq_count.sh'))
 
 
 
+# # # # # # # # # # # # #
+# collapse unique ECBC  #
+# # # # # # # # # # # # #
 
 
+for i in igs[0:1]: ################### ONLY TESTING IgG1 SAMPLE !!!!!!!
+    fn = '%s_%s_ECBC-panda.fasta' % (sample_name, ig)
+    itECBC_panda = FastqGeneralIterator(open(fn))
+
+    ### stores all handles that will be used to write to files
+    handle_dict = {}
+    for g in groups:
+	    handle_dict['%s_%s' % (i, g)] = open('%s_%s_%s.fastg' % (sample_name, i, g), 'w+')
+        
+    for it_obj in itECBC_panda:
+        group = it_obj[0][1][:12].upper()
+        print(group)
+
+	### writing
+	for read_here, r in zip(it_obj, reads):
+		handle_here = handle_dict['%s_%s' % (i, g)]
+		top = list(read_here)
+		top[0] = '>%s' % top[0]
+        top.append('')
+        print(top)
+        handle_here.write('\n'.join(top))
+
+    ### close files
+    for g in groups:
+	    handle_dict['%s_%s' % (i, g)].close()
+
+### count sequencs in fasta and fastq files
+print('\n*** count after subtype assignment ***\n')
+print(run_child('seq_count.sh'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+exit()
 # # # # # # # # # # # # #
 # collapse unique reads #
 # # # # # # # # # # # # #
