@@ -1,26 +1,20 @@
 # ECBC
-Collection of scripts for error correcting antibody sequening
+Scripts for error correcting antibody sequening
 
-## Old IgG_klMA_assign_V2.py
-
-`IgG_klMA_assign_V2.py` assigns the IgG and klMA subtypes of a demultiplexed sample based on the I1 and the R2 read.
-
-## ECBC IgG Reads
+## Experimental Setup
+### ECBC IgG Reads
 - R1: fwd 4N, leader, variable
 - R2: rev subtype determination, constant, variable
-- I1: EVBC 12
+- I1: ECBC (12)
 - I2: sample
 
-## ECBC klMA Reads
+### ECBC klMA Reads
 - R1: fwd 4N, leader, variable
-- R2: rev ECBC 12, spacer 4, constant, variable
-- I1: LC index TAAGGCGAGAGC 12
+- R2: rev ECBC (12), spacer (4), constant, variable
+- I1: LC index TAAGGCGAGAGC (12)
 - I2: sample
 
 ## Workflow
-
-`pipeline.sh`
-- script that calls all the later ones
 
 `IgG_klMA_ECBC.py`
 - pandaseq R1 und R2split into IgG vs. klMA
@@ -39,9 +33,11 @@ Usage: `CH_primer_trim.py SAMPLE_panda.fasta trim_fwd_primer.fasta trim_CH.fasta
 - collapse indices —> consensus (check for variation)
 
 
-## Primers
+### Primers
+`primer_fw.fasta`
+`primer_rv.fasta`
 
 
 ## Chunks
-
+Old scripts
 `pandaseq.py`
