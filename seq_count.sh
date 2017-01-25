@@ -1,5 +1,7 @@
 #! /bin/bash
 
+echo
+
 ### counting fastQ sequences
 list=$(ls | grep "\.fastq$")
 sum=0
