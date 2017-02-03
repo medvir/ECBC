@@ -1,5 +1,5 @@
 # ECBC
-Script subtype assignment and primer (constant region) trimming for antibody sequences wiht Error Correcting BarCodes
+Subtype assignment and primer (constant region) trimming for antibody sequences with Error Correcting BarCodes (ECBC)
 
 ## Experimental Setup
 ### ECBC IgG Reads
@@ -26,8 +26,8 @@ Script subtype assignment and primer (constant region) trimming for antibody seq
 ## Usage
 `IgG_klMA_ECBC_V2.py NAME_L001_R1_001.FASTQ[.GZ]`
 
-###Helper scritps
-`seq_count.sh` count fasta and fastq sequences
+###Helper Scripts
+`seq_count.sh` counts fasta and fastq sequences
 
 ### Primer
 - `primer_fwd_H.fasta` heavy chain forward primers

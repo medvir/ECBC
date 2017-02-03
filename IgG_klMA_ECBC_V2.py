@@ -64,7 +64,7 @@ def run_child(cmd, exe='/bin/bash'):
 def hamming_dist(str1, str2):
 	''' returns hamming distance of two strings of identical length '''
 	if len(str1) != len(str2):
-		return
+		return 'str not equal length'
 	return sum([1 for a, b in zip(str1, str2) if a != b])
 
 
@@ -79,7 +79,7 @@ def trim_primer(seq, set, dist):
 
 
 # # # # # # # # # # # # #
-# Read sequecing files  #
+# Read sequencing files #
 # # # # # # # # # # # # #
 
 if readfile1.endswith('.gz'):
@@ -105,9 +105,14 @@ for i in igs:
 		handle_dict['%s_%s' % (i, r)] = open('%s_%s_%s.fastq' % (sample_name, i, r), 'w+')
 
 ### Iterator
+count = 0
 for it_obj in izip(itR1, itR2, itI1):
+	count += 1
+	if (count % 10000 == 0):
+	    print count, 'sequences analyzed'
 	assert it_obj[0][0].split()[0] == it_obj[1][0].split()[0] and it_obj[1][0].split()[0] == it_obj[2][0].split()[0], 'Read ids do not match'
 	R1s, R2s, I1s = it_obj[0][1].upper(), it_obj[1][1].upper(), it_obj[2][1].upper()
+	
 	# # # # # # # # # # # # # # # # # # # # # #
 	# it_obj[0][x] = Read 1                   #
 	# it_obj[1][x] = Read 2                   #
@@ -127,31 +132,31 @@ for it_obj in izip(itR1, itR2, itI1):
 	if hamming_dist(I1s[0:12], 'TAAGGCGAGAGC') <= 1:
 	    
 		### Igl primer is 'ECBC_NNNN_CYAGTGTGGCCTTGTTGGCTTGR', primer = 23
-		if hamming_dist(R2s[ECBC_length+Spacer_R2:ECBC_length+Spacer_R2+23], 'CYAGTGTGGCCTTGTTGGCTTGR') <= 4:
+		if hamming_dist(R2s[ECBC_length+Spacer_R2:ECBC_length+Spacer_R2+23], 'CYAGTGTGGCCTTGTTGGCTTGR') <= 3:
 			ig = 'l'
 			R2 = '@%s' % it_obj[1][0], it_obj[1][1][ECBC_length+Spacer_R2+23:], '+', it_obj[1][2][ECBC_length+Spacer_R2+23:] # R2 sequence and quality trim
-			n = trim_primer(it_obj[0][1][Spacer_R2:], fwd_l, 4) + Spacer_R2
+			n = trim_primer(it_obj[0][1][N4_R1:], fwd_l, 4) + N4_R1
 			R1 = '@%s' % it_obj[0][0], it_obj[0][1][n:], '+', it_obj[0][2][n:] # R1 sequence and quality trim
 						
 		### Igk primer is 'ECBC_NNNN_ACAGATGGTGCAGCCACAGTTC', primer = 22
 		elif hamming_dist(R2s[ECBC_length+Spacer_R2:ECBC_length+Spacer_R2+22], 'ACAGATGGTGCAGCCACAGTTC') <= 3:
 			ig = 'k'
 			R2 = '@%s' % it_obj[1][0], it_obj[1][1][ECBC_length+Spacer_R2+22:], '+', it_obj[1][2][ECBC_length+Spacer_R2+22:] # R2 sequence and quality trim
-			n = trim_primer(it_obj[0][1][Spacer_R2:], fwd_k, 4) + Spacer_R2
+			n = trim_primer(it_obj[0][1][N4_R1:], fwd_k, 4) + N4_R1
 			R1 = '@%s' % it_obj[0][0], it_obj[0][1][n:], '+', it_obj[0][2][n:] # R1 sequence and quality trim
 
 		### IgM primer is 'ECBC_NNNN_NNNNGGTTGGGGCGGATGCACTCC', primer = 20
 		#elif hamming_dist(R2s[ECBC_length+Spacer_R2:ECBC_length+Spacer_R2+20], 'xxxxxxxxxxxxx') <= 2:
 			#ig = 'IgM'
 			#R2 = '@%s' % it_obj[1][0], it_obj[1][1][ECBC_length+Spacer_R2+20:], '+', it_obj[1][2][ECBC_length+Spacer_R2+20:] # R2 sequence and quality trim
-			#n = trim_primer(it_obj[0][1][Spacer_R2:], fwd_H, 4) + Spacer_R2
+			#n = trim_primer(it_obj[0][1][N4_R1:], fwd_H, 4) + N4_R1
 			#R1 = '@%s' % it_obj[0][0], it_obj[0][1][n:], '+', it_obj[0][2][n:] # R1 sequence and quality trim
 
         ### IgA primer is 'ECBC_NNNN_GCATCCCCGACCAGCCCCAAGGTCTTCCCGCTGAGCCTCKRCAGCACCCMSCMAGATGGGAACGTGGTCRTC', primer = 72
 		elif hamming_dist(R2s[ECBC_length+Spacer_R2:ECBC_length+Spacer_R2+72], 'GAYGACCACGTTCCCATCTKGSKGGGTGCTGYMGAGGCTCAGCGGGAAGACCTTGGGGCTGGTCGGGGATGC') <= 10:
 			ig = 'IgA'
 			R2 = '@%s' % it_obj[1][0], it_obj[1][1][ECBC_length+Spacer_R2+72:], '+', it_obj[1][2][ECBC_length+Spacer_R2+72:] # R2 sequence and quality trim
-			n = trim_primer(it_obj[0][1][Spacer_R2:], fwd_H, 4) + Spacer_R2
+			n = trim_primer(it_obj[0][1][N4_R1:], fwd_H, 4) + N4_R1
 			R1 = '@%s' % it_obj[0][0], it_obj[0][1][n:], '+', it_obj[0][2][n:] # R1 sequence and quality trim
 
 		### undetermined for klMA
