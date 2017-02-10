@@ -21,9 +21,9 @@ from Bio import pairwise2
 
 
 ### Arguments and variables
-ECBC_length = 12
-N4_R1 = 4 # at start of R1
-Spacer_R2 = 4 # between ECBC and constant for klMA
+ECBC_length = 12 # length of ECBC
+N4_R1 = 4 # nucleotides to increase variability at start of R1
+Spacer_R2 = 4 # spacer between ECBC and constant for klMA
 minimal_overlap = 10 # minimal overlap for pandaseq
 readfile1  = sys.argv[1] # format NAME_S#_L001_R1_001.fastq[.gz]
 readfile2 = readfile1.replace("L001_R1_001", "L001_R2_001")
@@ -37,7 +37,6 @@ reads = ['R1', 'R2', 'I1']
 sample_name = os.path.split(readfile1)[1]
 sample_name = sample_name.replace("_L001_R1_001.fastq.gz", "")
 sample_name = sample_name.replace("_L001_R1_001.fastq", "")
-print(sample_name)
 
 ### Read primers and convert to str
 fwd_H = [str(s.seq) for s in SeqIO.parse(open('%s/%s' % (sys.path[0], 'primer_fwd_H.fasta')),'fasta')]
@@ -50,10 +49,7 @@ fwd_l = [str(s.seq) for s in SeqIO.parse(open('%s/%s' % (sys.path[0], 'primer_fw
 # # # # # # #
 
 def run_child(cmd, exe='/bin/bash'):
-	'''
-	use subrocess.check_output to run an external program with arguments
-	run this function with run_child('string that you want to run')
-	'''
+	'''	uses subrocess.check_output to run an external program with arguments '''
 	try:
 		output = subprocess.check_output(cmd, universal_newlines=True, shell=True, stderr=subprocess.STDOUT)
 	except subprocess.CalledProcessError as ee:
@@ -107,9 +103,12 @@ for i in igs:
 ### Iterator
 count = 0
 for it_obj in izip(itR1, itR2, itI1):
+	
+	### counter only for information purpose
 	count += 1
 	if (count % 10000 == 0):
-	    print count, 'sequences analyzed'
+	    print sample_name, count, 'sequences analyzed'
+	
 	assert it_obj[0][0].split()[0] == it_obj[1][0].split()[0] and it_obj[1][0].split()[0] == it_obj[2][0].split()[0], 'Read ids do not match'
 	R1s, R2s, I1s = it_obj[0][1].upper(), it_obj[1][1].upper(), it_obj[2][1].upper()
 	
@@ -233,8 +232,8 @@ for ig in igs:
 	run_child(cmd)
 	
 	### delete R1 and R2
-	#os.remove(fwd)
-	#os.remove(rev)
+	os.remove(fwd)
+	os.remove(rev)
 
 
 # # # # # # # # # #

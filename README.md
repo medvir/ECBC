@@ -28,6 +28,7 @@ Subtype assignment and primer (constant region) trimming for antibody sequences 
 
 ###Helper Scripts
 `seq_count.sh` counts fasta and fastq sequences
+`batch.ch` to run multiple samples
 
 ### Primer
 - `primer_fwd_H.fasta` heavy chain forward primers

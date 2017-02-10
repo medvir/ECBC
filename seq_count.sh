@@ -1,5 +1,4 @@
 #! /bin/bash
-
 echo
 
 ### counting fastQ sequences
@@ -15,7 +14,6 @@ if (( $sum > 0 )); then
 	echo -e $sum "\t Total"
 	echo
 fi
-
 
 ### counting fastA sequences
 list=$(ls | grep "\.fasta$")
