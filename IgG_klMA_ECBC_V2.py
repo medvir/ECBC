@@ -64,9 +64,9 @@ def hamming_dist(str1, str2):
 	return sum([1 for a, b in zip(str1, str2) if a != b])
 
 
-def trim_primer(seq, set, dist):
+def trim_primer(seq, primer_set, dist):
 	''' trim primer '''
-	for p in set:
+	for p in primer_set:
 		n = len(p)
 		if hamming_dist(seq[:n], p) <= dist:
 			break
@@ -134,6 +134,8 @@ for it_obj in izip(itR1, itR2, itI1):
 		if hamming_dist(R2s[ECBC_length+Spacer_R2:ECBC_length+Spacer_R2+23], 'CYAGTGTGGCCTTGTTGGCTTGR') <= 3:
 			ig = 'l'
 			R2 = '@%s' % it_obj[1][0], it_obj[1][1][ECBC_length+Spacer_R2+23:], '+', it_obj[1][2][ECBC_length+Spacer_R2+23:] # R2 sequence and quality trim
+			
+			### primer trim R1
 			n = trim_primer(it_obj[0][1][N4_R1:], fwd_l, 4) + N4_R1
 			R1 = '@%s' % it_obj[0][0], it_obj[0][1][n:], '+', it_obj[0][2][n:] # R1 sequence and quality trim
 						
@@ -141,6 +143,8 @@ for it_obj in izip(itR1, itR2, itI1):
 		elif hamming_dist(R2s[ECBC_length+Spacer_R2:ECBC_length+Spacer_R2+22], 'ACAGATGGTGCAGCCACAGTTC') <= 3:
 			ig = 'k'
 			R2 = '@%s' % it_obj[1][0], it_obj[1][1][ECBC_length+Spacer_R2+22:], '+', it_obj[1][2][ECBC_length+Spacer_R2+22:] # R2 sequence and quality trim
+			
+			### primer trim R1
 			n = trim_primer(it_obj[0][1][N4_R1:], fwd_k, 4) + N4_R1
 			R1 = '@%s' % it_obj[0][0], it_obj[0][1][n:], '+', it_obj[0][2][n:] # R1 sequence and quality trim
 
@@ -155,6 +159,8 @@ for it_obj in izip(itR1, itR2, itI1):
 		elif hamming_dist(R2s[ECBC_length+Spacer_R2:ECBC_length+Spacer_R2+72], 'GAYGACCACGTTCCCATCTKGSKGGGTGCTGYMGAGGCTCAGCGGGAAGACCTTGGGGCTGGTCGGGGATGC') <= 10:
 			ig = 'IgA'
 			R2 = '@%s' % it_obj[1][0], it_obj[1][1][ECBC_length+Spacer_R2+72:], '+', it_obj[1][2][ECBC_length+Spacer_R2+72:] # R2 sequence and quality trim
+			
+			### primer trim R1
 			n = trim_primer(it_obj[0][1][N4_R1:], fwd_H, 4) + N4_R1
 			R1 = '@%s' % it_obj[0][0], it_obj[0][1][n:], '+', it_obj[0][2][n:] # R1 sequence and quality trim
 
@@ -232,12 +238,9 @@ for ig in igs:
 	run_child(cmd)
 	
 	### delete R1 and R2
-	os.remove(fwd)
-	os.remove(rev)
+	#os.remove(fwd)
+	#os.remove(rev)
 
 
-# # # # # # # # # #
-# Count sequences #
-# # # # # # # # # #
-
+### Count sequences
 print(run_child('%s/%s' % (sys.path[0], 'seq_count.sh')))
