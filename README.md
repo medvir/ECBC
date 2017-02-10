@@ -1,5 +1,5 @@
 # ECBC
-Subtype assignment and primer (constant region) trimming for antibody sequences with Error Correcting BarCodes (ECBC)
+Subtype assignment and primer trimming for antibody sequences with Error Correcting BarCodes (ECBC)
 
 ## Experimental Setup
 ### ECBC IgG Reads
@@ -17,17 +17,18 @@ Subtype assignment and primer (constant region) trimming for antibody sequences 
 ## Workflow
 
 `IgG_klMA_ECBC.py`
-- split into IgG vs. klMA
-- for LC do klMA discrimination
-- for HC determine IgG subtypes
-- write ECBC in front of R1
-- pandaseq R1 und R2
+1. split into IgG vs. klMA
+2. for LC do klMA discrimination
+3. for HC determine IgG subtypes
+4. write ECBC in front of R1
+5. pandaseq R1 und R2
 
 ## Usage
 `IgG_klMA_ECBC_V2.py NAME_L001_R1_001.FASTQ[.GZ]`
 
 ###Helper Scripts
 `seq_count.sh` counts fasta and fastq sequences
+
 `batch.ch` to run multiple samples
 
 ### Primer
