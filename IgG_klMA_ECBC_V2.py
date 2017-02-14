@@ -238,8 +238,8 @@ for ig in igs:
 	run_child(cmd)
 	
 	### delete R1 and R2
-	#os.remove(fwd)
-	#os.remove(rev)
+	os.remove(fwd)
+	os.remove(rev)
 
 
 ### Count sequences
