@@ -31,6 +31,8 @@ Subtype assignment and primer trimming for antibody sequences with Error Correct
 
 `batch.ch` to run multiple samples
 
+`imgt_combine.sh` to combine two IMGT output files from the same sample
+ 
 ### Primer
 - `primer_fwd_H.fasta` heavy chain forward primers
 - `primer_fwd_k.fasta` kappa forward primers
