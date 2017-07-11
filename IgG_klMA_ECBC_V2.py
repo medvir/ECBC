@@ -21,7 +21,7 @@ from Bio import pairwise2
 
 
 ### Arguments and variables
-ECBC_length = 12 # length of ECBC
+ECBC_length = 21 # length of ECBC
 N4_R1 = 4 # nucleotides to increase variability at start of R1
 Spacer_R2 = 4 # spacer between ECBC and constant for klMA
 minimal_overlap = 10 # minimal overlap for pandaseq

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import re
@@ -20,8 +20,8 @@ def extract_genes(df):
     return df
 
 def extract_barcode(df):
-    '''First 21 nt of sequence are barcode'''
-    bc = df['Sequence'].apply(lambda x: str(x)[:21])
+    '''First 12 nt of sequence are barcode'''
+    bc = df['Sequence'].apply(lambda x: str(x)[:12])
     df = df.copy()
     df['barcode'] = bc
     return df
