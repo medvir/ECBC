@@ -37,3 +37,7 @@ Subtype assignment and primer trimming for antibody sequences with Error Correct
 - `primer_fwd_H.fasta` heavy chain forward primers
 - `primer_fwd_k.fasta` kappa forward primers
 - `primer_fwd_l.fasta` lambda forward primers
+
+
+
+## Analysis ECBC Ab sequences1. run `IgG_klMA_ECBC_V2.py`2. upload sequences to IMGT (split big files into files with 1000000 sequences each)3. download IMGT results, combine files which had been split before4. run `annotate_first.py`
