@@ -158,7 +158,7 @@ def main():
         # zfill needs a higher value to sort correctly if > 999 reads per group
         consensus = make_cons('msa.fasta')
         name = '%s_reads-%s' % (str(seqs).zfill(3), seq_name.replace(' ', '-'))
-        SeqIO.write([SeqRecord(Seq(consensus), id=name, description='')])
+        SeqIO.write([SeqRecord(Seq(consensus), id=name, description='')], '%s_tmp.fasta' % stem, 'fasta')
         # run_child('cons -sequence %s_msa.fasta -name %s_reads-%s -outseq %s_tmp.fasta'
         #           % (stem, str(seqs).zfill(3), seq_name.replace(' ', '-'), stem))
         os.remove('%s_msa.fasta' % stem)
