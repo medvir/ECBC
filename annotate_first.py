@@ -17,6 +17,7 @@ d2a = {'A': 'A', 'C': 'C', 'G': 'G', 'T': 'T', 'AG': 'R', 'CT': 'Y', 'AC': 'M', 
 
 def make_cons(filein):
     """Take a MSA in fasta format and return a data frame with position, nucleotide, frequencies."""
+    from warnings import warn
     from collections import Counter
     msa = AlignIO.read(filein, 'fasta')
     m = len(msa)  # rows, number of sequences
@@ -26,16 +27,22 @@ def make_cons(filein):
         c = Counter(b.upper() for b in msa[:, j])
         if c['-'] > 0.5 * m:
             continue
-        bases = ''.join(sorted([b for b, counts in c.items() if counts > 0.25 * m]))
-        cons.append(d2a[bases])
-
+        #print(c)
+        #bases = ''.join(sorted([b for b, counts in c.items() if counts >= 0.25 * m]))
+        bases = ''.join(sorted(c, key=c.get, reverse=True)) #sorted by frequency, will not work for wobble calling with d2a!
+        #print(bases)
+        bases = bases[0] # max frequency base instead of wobbles!
+        try:
+            cons.append(d2a[bases])
+        except KeyError:
+            warn(str(c))
     return ''.join(cons)
 
-
 def extract_genes(df):
-    ''' Split V/J genes and alleles at the first *
+    """Split V/J genes and alleles at the first *.
+
     Homsap IGHV3-7*01 F, or Homsap IGHV3-7*02 F -> Homsap IGHV3-7
-    '''
+    """
     vgene = df['V-GENE and allele'].apply(lambda x: "_or_".join(sorted(set(re.findall('IG.V.-[0-9]+', x)))))
     jgene = df['J-GENE and allele'].apply(lambda x: "_or_".join(sorted(set(re.findall('IG.J[0-9]+', x)))))
     df = df.copy()
@@ -44,19 +51,16 @@ def extract_genes(df):
     return df
 
 def extract_barcode(df):
-    '''First 21 nt of sequence are barcode'''
+    """First 21 nt of sequence are barcode."""
     bc = df['Sequence'].apply(lambda x: str(x)[:21])
     df = df.copy()
     df['barcode'] = bc
     return df
 
-def run_child(cmd, exe='/bin/bash'):
-    '''use subrocess.check_output to run an external program with arguments'''
+def run_child(cmd):
+    """use subrocess.check_output to run an external program with arguments."""
     try:
-        output = subprocess.check_output(cmd, universal_newlines=True,
-        shell=True,
-#        executable=exe,
-        stderr=subprocess.STDOUT)
+        output = subprocess.check_output(cmd, universal_newlines=True, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as ee:
         sys.exit("Execution of %s failed with returncode %d: %s" % (cmd, ee.returncode, ee.output))
         sys.exit(cmd)
@@ -80,30 +84,29 @@ def main():
     now = strftime("%Y-%m-%d %H:%M:%S", localtime())
     print('%s reading summary file' % now, file=sys.stderr)
     sys.stderr.flush()
-    imgt_ann = pd.read_csv(filepath_or_buffer=summary_file, delimiter='\t',
-                header=0, low_memory=True)
+    imgt_ann = pd.read_csv(filepath_or_buffer=summary_file, delimiter='\t', header=0, low_memory=True)
     mask = imgt_ann['V-DOMAIN Functionality'].str.startswith('productive')
 
     imgt_ann = (imgt_ann.loc[mask, sel_cols]
                 .pipe(extract_genes)
                 .pipe(extract_barcode)
-    )
+               )
 
     now = strftime("%Y-%m-%d %H:%M:%S", localtime())
     print('%s reading nt file' % now, file=sys.stderr)
     sys.stderr.flush()
     if chain == 'HC':
         imgt_seqs = (pd.read_csv(nt_file, delimiter='\t', header=0, low_memory=True)
-                    .loc[:, ['Sequence ID', 'V-D-J-REGION']]
+                     .loc[:, ['Sequence ID', 'V-D-J-REGION']]
                     )
         imgt_seqs.rename(index=str, columns={'V-D-J-REGION': 'Ab_sequence'}, inplace=True)
     else:
         imgt_seqs = (pd.read_csv(nt_file, delimiter='\t', header=0, low_memory=True)
-                    .loc[:, ['Sequence ID', 'V-J-REGION']]
+                     .loc[:, ['Sequence ID', 'V-J-REGION']]
                     )
         imgt_seqs.rename(columns={'V-J-REGION': 'Ab_sequence'}, inplace=True)
 
-    imgt_seqs = imgt_seqs.assign(nt_length = imgt_seqs['Ab_sequence'].str.len())
+    imgt_seqs = imgt_seqs.assign(nt_length=imgt_seqs['Ab_sequence'].str.len())
     imgt_seqs.fillna(0, inplace=True)
     imgt_seqs['nt_length'] = imgt_seqs['nt_length'].astype(int)
 
@@ -118,11 +121,11 @@ def main():
     all_abs = '%s_all_antibodies.fasta' % stem
     if os.path.exists(all_abs):
         os.remove(all_abs)
-    #n_groups = grouped_all.size().shape[0]
+    # n_groups = grouped_all.size().shape[0]
 
-    #n = 0
+    # n = 0
     for idx, group in grouped_all:
-    #    n += 1
+    # n += 1
         seqs = group.shape[0]
         if seqs < 3:
             continue
@@ -131,11 +134,11 @@ def main():
 
         # heavy chain
         if chain == 'HC':
-            if 'IGHV3-23' not in vgene or 'IGHJ6' not in jgene: ### heavy chain gene selection
+            if 'IGHV3-23' not in vgene or 'IGHJ6' not in jgene: # heavy chain gene selection
                 continue
         # light chain
         else:
-            if 'IGLV2-23' not in vgene or ('IGLJ3' not in jgene and 'IGLJ5' not in jgene):  ### ligth chain gene selection
+            if 'IGLV2-23' not in vgene or ('IGLJ3' not in jgene and 'IGLJ5' not in jgene):  # ligth chain gene selection
                 continue
 
         seq_name = '_'.join([str(x) for x in idx])
@@ -145,18 +148,19 @@ def main():
     #                        (imgt_ann['JGENE'] == jgene) & \
     #                        (imgt_ann['CDR3-IMGT length'] == cdr_length) & \
     #                        (imgt_ann['barcode'] == barcode) & \
-    #						(imgt_ann['nt_length'] == nt_len)]
+    #                        (imgt_ann['nt_length'] == nt_len)]
 
 
         h = open('%s_g.fasta' % stem, 'w')
         for i, s in group.iterrows():
             print('>%s' % s['Sequence ID'], file=h)
             print('%s' % s['Ab_sequence'], file=h)
+            del i
         h.close()
         run_child('muscle -in %s_g.fasta -out %s_msa.fasta' % (stem, stem))
         os.remove('%s_g.fasta' % stem)
         # zfill needs a higher value to sort correctly if > 999 reads per group
-        consensus = make_cons('msa.fasta')
+        consensus = make_cons('%s_msa.fasta' % stem)
         name = '%s_reads-%s' % (str(seqs).zfill(3), seq_name.replace(' ', '-'))
         SeqIO.write([SeqRecord(Seq(consensus), id=name, description='')], '%s_tmp.fasta' % stem, 'fasta')
         # run_child('cons -sequence %s_msa.fasta -name %s_reads-%s -outseq %s_tmp.fasta'
