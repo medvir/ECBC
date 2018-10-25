@@ -10,6 +10,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import AlignIO
+import shutil
 
 d2a = {'A': 'A', 'C': 'C', 'G': 'G', 'T': 'T', 'AG': 'R', 'CT': 'Y', 'AC': 'M', 'GT': 'K', 'CG': 'S', 'AT': 'W',
        'ACT': 'H', 'CGT': 'B', 'ACG': 'V', 'AGT': 'D', 'ACGT': 'N'}
@@ -28,6 +29,9 @@ def make_cons(filein):
         if c['-'] > 0.5 * m:
             continue
         #print(c)
+        if '-' in c:
+            print('gap in alignment!!!!!')
+            del c['-'] # removes gap from positions with less than 50% gaps to add the most frequent base at this position
         #bases = ''.join(sorted([b for b, counts in c.items() if counts >= 0.25 * m]))
         bases = ''.join(sorted(c, key=c.get, reverse=True)) #sorted by frequency, will not work for wobble calling with d2a!
         #print(bases)
@@ -123,9 +127,9 @@ def main():
         os.remove(all_abs)
     # n_groups = grouped_all.size().shape[0]
 
-    # n = 0
+    n = 0
     for idx, group in grouped_all:
-    # n += 1
+        n += 1
         seqs = group.shape[0]
         if seqs < 3:
             continue
@@ -152,12 +156,24 @@ def main():
 
 
         h = open('%s_g.fasta' % stem, 'w')
+        c = 0
         for i, s in group.iterrows():
             print('>%s' % s['Sequence ID'], file=h)
             print('%s' % s['Ab_sequence'], file=h)
+            c = c + 1
+            if c >= 500: # break if more than n sequences in group
+                print(c)
+                del i
+                break
             del i
         h.close()
-        run_child('muscle -in %s_g.fasta -out %s_msa.fasta' % (stem, stem))
+        run_child('muscle -in %s_g.fasta -out %s_msa.fasta -gapopen -100' % (stem, stem)) # gapopen penalty
+        
+        source = "%s_msa.fasta" % stem
+        dest = "%s_%d_%s_msa.fasta" % (stem, n, idx[3])
+        shutil.copyfile(source, dest)
+        
+        
         os.remove('%s_g.fasta' % stem)
         # zfill needs a higher value to sort correctly if > 999 reads per group
         consensus = make_cons('%s_msa.fasta' % stem)
