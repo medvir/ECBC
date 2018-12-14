@@ -10,7 +10,9 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import AlignIO
-import shutil
+#import shutil
+from Bio.Phylo.TreeConstruction import DistanceCalculator
+
 
 d2a = {'A': 'A', 'C': 'C', 'G': 'G', 'T': 'T', 'AG': 'R', 'CT': 'Y', 'AC': 'M', 'GT': 'K', 'CG': 'S', 'AT': 'W',
        'ACT': 'H', 'CGT': 'B', 'ACG': 'V', 'AGT': 'D', 'ACGT': 'N'}
@@ -44,7 +46,6 @@ def make_cons(filein):
 
 def extract_genes(df):
     """Split V/J genes and alleles at the first *.
-
     Homsap IGHV3-7*01 F, or Homsap IGHV3-7*02 F -> Homsap IGHV3-7
     """
     vgene = df['V-GENE and allele'].apply(lambda x: "_or_".join(sorted(set(re.findall('IG.V.-[0-9]+', x)))))
@@ -70,6 +71,55 @@ def run_child(cmd):
         sys.exit(cmd)
         output = None
     return output
+
+def check_clustering_and_trim(msa_outfile):
+    """Check if a cluster includes different sub-groups of antibodies by checking 
+    the following criteria:
+        - break the cluster into sub-groups if there is a distance above 10% 
+    return a list of file-names
+    """
+    # calculate the distance matrix
+    aln = AlignIO.read(msa_outfile, "fasta")
+    calculator = DistanceCalculator('identity')
+    dm = calculator.get_distance(aln)
+    
+    # extract the sequential pairwise distance
+    off_diag = []
+    for i in range(1, len(dm)):
+        off_diag.append(dm[i,-2])
+    
+    greater_idx = []
+    for i in range(0, len(off_diag)):
+        if off_diag[i] > 0.1:
+            greater_idx.append(i)
+    
+    clusters_lists = []
+    prev_idx = 0
+    for idx in greater_idx:
+        sub_cluster = aln[prev_idx:idx+1, :]
+        prev_idx = idx+1 # index in distance array is 1 less than index in the alignment list (aln)
+        clusters_lists.append(sub_cluster)
+        # Take care of the last piece after the last greater element
+        if(idx == greater_idx[-1]): 
+            clusters_lists.append(aln[(greater_idx[-1]+1):, :])
+
+     # number of pairwise distances is one less than number of aligned sequences
+    if clusters_lists:
+        total_seqs = 0
+        for ls in clusters_lists: 
+            total_seqs += len(ls._records)        
+        assert (len(off_diag) +1) == total_seqs, "number of sequences in sub-clusters %d \
+                                                is not equal to number of seqs %d in \
+                                            original cluster" %(total_seqs, (len(off_diag) +1))
+                                            
+    sub_clusters_file_dict = {}
+    msa_filename = os.path.splitext(msa_outfile)[0]
+    for idx , sub_clusters in enumerate(clusters_lists):
+        sub_msa_file = "%s_%d.fasta" %(msa_filename, idx)
+        AlignIO.write(sub_clusters, sub_msa_file, "fasta")
+        sub_clusters_file_dict.update({sub_msa_file:len(sub_clusters)})
+        
+    return sub_clusters_file_dict
 
 def main():
 
@@ -167,24 +217,46 @@ def main():
                 break
             del i
         h.close()
-        run_child('muscle -in %s_g.fasta -out %s_msa.fasta -gapopen -100' % (stem, stem)) # gapopen penalty
         
-        source = "%s_msa.fasta" % stem
-        dest = "%s_%d_%s_msa.fasta" % (stem, n, idx[3])
-        shutil.copyfile(source, dest)
+        msa_outfile = '%s_msa.fasta' % stem
+        run_child('muscle -in %s_g.fasta -out %s -gapopen -100' % (stem, msa_outfile)) # gapopen penalty
+        #dest = "%s_%s_%d_msa.fasta" % (stem, seq_name, n)
+        #shutil.copyfile(msa_outfile, dest)
         
-        
+        # check for sub-groups in a cluster and if this is the case separate them 
+        clusters_file_dict = check_clustering_and_trim(msa_outfile)
         os.remove('%s_g.fasta' % stem)
-        # zfill needs a higher value to sort correctly if > 999 reads per group
-        consensus = make_cons('%s_msa.fasta' % stem)
-        name = '%s_reads-%s' % (str(seqs).zfill(3), seq_name.replace(' ', '-'))
-        SeqIO.write([SeqRecord(Seq(consensus), id=name, description='')], '%s_tmp.fasta' % stem, 'fasta')
-        # run_child('cons -sequence %s_msa.fasta -name %s_reads-%s -outseq %s_tmp.fasta'
-        #           % (stem, str(seqs).zfill(3), seq_name.replace(' ', '-'), stem))
-        os.remove('%s_msa.fasta' % stem)
-        run_child('cat %s_tmp.fasta >> %s' % (stem, all_abs))
-        os.remove('%s_tmp.fasta' % stem)
-
+        
+        if not clusters_file_dict: 
+            consensus = make_cons('%s_msa.fasta' % stem)
+            # zfill needs a higher value to sort correctly if > 999 reads per group
+            name = '%s_reads-%s' % (str(seqs).zfill(3), seq_name.replace(' ', '-'))
+            SeqIO.write([SeqRecord(Seq(consensus), id=name, description='')], '%s_tmp.fasta' % stem, 'fasta')
+            run_child('cat %s_tmp.fasta >> %s' % (stem, all_abs))
+            os.remove('%s_tmp.fasta' % stem)
+        else:
+            file_counter = 0
+            for subcluster_file, seq_total in clusters_file_dict.items():
+                #dest = "%s_%s_%d_msa.fasta" % (os.path.splitext(subcluster_file)[0], seq_name, n)
+                #shutil.copyfile(subcluster_file, dest)
+                # if number of sequences in the group is less than 3 don't make a consensus seq
+                if (seq_total < 3):
+                    os.remove(subcluster_file)
+                    continue
+                
+                consensus = make_cons(subcluster_file)
+                seqs = seq_total                
+                # zfill needs a higher value to sort correctly if > 999 reads per group
+                # to prevent duplicated key give index to the consensus name
+                name = '%s_reads-%s_%d' % (str(seqs).zfill(3), seq_name.replace(' ', '-'), file_counter)
+                SeqIO.write([SeqRecord(Seq(consensus), id=name, description='')], '%s_tmp.fasta' % stem, 'fasta')
+                os.remove(subcluster_file)
+                run_child('cat %s_tmp.fasta >> %s' % (stem, all_abs))
+                os.remove('%s_tmp.fasta' % stem)
+                file_counter += 1
+        
+        os.remove(msa_outfile)
+        
     abs_seqs = SeqIO.to_dict(SeqIO.parse(all_abs, 'fasta'))
     new_abs_seqs = [abs_seqs[k] for k in sorted(abs_seqs.keys(), reverse=True)]
     SeqIO.write(new_abs_seqs, 'sorted-%s' % all_abs, 'fasta')
