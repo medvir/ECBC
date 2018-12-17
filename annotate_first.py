@@ -260,6 +260,7 @@ def main():
     abs_seqs = SeqIO.to_dict(SeqIO.parse(all_abs, 'fasta'))
     new_abs_seqs = [abs_seqs[k] for k in sorted(abs_seqs.keys(), reverse=True)]
     SeqIO.write(new_abs_seqs, 'sorted-%s' % all_abs, 'fasta')
+    os.remove(all_abs)
 
 if __name__ == '__main__':
     main()
